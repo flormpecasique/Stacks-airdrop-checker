@@ -20,27 +20,29 @@ async function checkAirdrops() {
             resultHTML += `<p><strong>STX:</strong> ${(data.stx.balance / 1e6).toFixed(6)} STX</p>`;
         }
 
-        // Tokens fungibles recibidos (posibles airdrops)
-        if (data.fungible_tokens && data.fungible_tokens.length > 0) {
+        // Airdrops recibidos
+        if (data.transactions && data.transactions.length > 0) {
             resultHTML += `<table>
                 <tr>
                     <th>#</th>
-                    <th>Token</th>
-                    <th>Amount</th>
+                    <th>Airdrop Name</th>
+                    <th>Status</th>
                 </tr>`;
 
             let airdropCount = 0;
-            for (const token of data.fungible_tokens) {
-                airdropCount++;
-                const tokenName = token.name; // Nombre del token
-                const balance = token.amount / (10 ** token.decimals); // Ajuste de la cantidad
+            for (const tx of data.transactions) {
+                if (tx.tx_type === "token_transfer" && tx.token && tx.token.contract) {
+                    airdropCount++;
+                    const contractAddress = tx.token.contract;
+                    const airdropName = contractAddress.split('.')[1];  // Extraemos el nombre del airdrop
+                    const status = tx.status === "success" ? "✔️" : "⏳"; // Check o reloj de arena
 
-                // Mostrar la cantidad de tokens
-                resultHTML += `<tr>
-                    <td>${airdropCount}</td>
-                    <td>${tokenName}</td>
-                    <td>${balance.toFixed(6)}</td>
-                </tr>`;
+                    resultHTML += `<tr>
+                        <td>${airdropCount}</td>
+                        <td><a href="https://explorer.hiro.so/address/${contractAddress}" target="_blank">${airdropName}</a></td>
+                        <td>${status}</td>
+                    </tr>`;
+                }
             }
 
             resultHTML += `</table>`;
