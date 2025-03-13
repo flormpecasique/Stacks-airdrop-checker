@@ -58,4 +58,3 @@ async function checkAirdrops() {
         console.error("Fetch error:", error);
     }
 }
-
