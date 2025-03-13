@@ -143,3 +143,16 @@ footer {
     font-size: 12px;
     color: rgba(255, 255, 255, 0.6);
 }
+
+/* Estilo para los enlaces de los airdrops */
+a {
+    text-decoration: none; /* Elimina el subrayado */
+    color: inherit; /* Hereda el color del texto para que no sea azul */
+}
+
+/* Estilo para el hover (cuando el usuario pasa el mouse sobre el enlace) */
+a:hover {
+    color: #007bff; /* Cambia el color a un azul suave cuando el usuario pasa el ratón */
+    text-decoration: underline; /* Agrega subrayado solo cuando el ratón pasa sobre el enlace */
+}
+
