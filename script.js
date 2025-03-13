@@ -9,7 +9,8 @@ async function checkAirdrops() {
     resultsDiv.innerHTML = "<p>Buscando airdrops...</p>";
 
     try {
-        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`);
+        // Cambiar la URL para usar el proxy en Vercel
+        const response = await fetch(`/api/hiro-proxy?address=${address}`);
         const data = await response.json();
 
         if (data) {
