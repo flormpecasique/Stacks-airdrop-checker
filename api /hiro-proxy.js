@@ -1,24 +1,19 @@
 // api/hiro-proxy.js
 export default async function handler(req, res) {
-    const { endpoint } = req.query;
-    const HIRO_API_KEY = process.env.HIRO_API_KEY; // Asegúrate de definirla en Vercel
-
-    if (!endpoint) {
-        return res.status(400).json({ error: "Falta el endpoint en la solicitud" });
-    }
-
     try {
+        const { endpoint } = req.query;
+        if (!endpoint) return res.status(400).json({ error: "Missing API endpoint parameter" });
+
         const response = await fetch(`https://api.hiro.so/${endpoint}`, {
-            headers: { "x-api-key": HIRO_API_KEY }
+            headers: { "x-api-key": process.env.HIRO_API_KEY }
         });
 
-        if (!response.ok) {
-            throw new Error("Error en la API de Hiro");
-        }
+        if (!response.ok) throw new Error("Hiro API request failed");
 
         const data = await response.json();
         res.status(200).json(data);
     } catch (error) {
+        console.error("API Proxy Error:", error);
         res.status(500).json({ error: error.message });
     }
 }
