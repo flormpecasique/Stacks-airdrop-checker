@@ -9,7 +9,7 @@ async function checkAirdrops() {
     resultsDiv.innerHTML = "<p>Fetching airdrop data...</p>";
 
     try {
-        const response = await fetch(`/api/hiro-proxy?endpoint=extended/v1/address/${address}/balances`);
+        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`);
         if (!response.ok) throw new Error("API request failed");
 
         const data = await response.json();
@@ -66,3 +66,8 @@ async function getTokenName(contract) {
         return "Unknown Token";
     }
 }
+
+
+
+
+
