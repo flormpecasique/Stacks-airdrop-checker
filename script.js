@@ -6,7 +6,7 @@ async function checkAirdrops() {
     }
 
     const resultsDiv = document.getElementById("results");
-    resultsDiv.innerHTML = "Buscando airdrops...";
+    resultsDiv.innerHTML = "<p>Buscando airdrops...</p>";
 
     try {
         const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`);
@@ -17,11 +17,23 @@ async function checkAirdrops() {
             resultHTML += `<p><strong>STX:</strong> ${data.stx.balance / 1e6} STX</p>`;
 
             if (data.fungible_tokens && Object.keys(data.fungible_tokens).length > 0) {
-                resultHTML += `<h3>Tokens Recibidos:</h3><ul>`;
-                for (const [token, details] of Object.entries(data.fungible_tokens)) {
-                    resultHTML += `<li><strong>${token}:</strong> ${details.balance / (10 ** details.decimals)}</li>`;
-                }
-                resultHTML += `</ul>`;
+                resultHTML += `<table>
+                    <tr>
+                        <th>Token</th>
+                        <th>Cantidad</th>
+                    </tr>`;
+
+                Object.entries(data.fungible_tokens)
+                    .sort((a, b) => a[0].localeCompare(b[0])) // Ordenar alfabéticamente
+                    .forEach(([token, details]) => {
+                        const balance = details.balance / (10 ** details.decimals);
+                        resultHTML += `<tr>
+                            <td>${token}</td>
+                            <td>${balance}</td>
+                        </tr>`;
+                    });
+
+                resultHTML += `</table>`;
             } else {
                 resultHTML += `<p>No se encontraron tokens en esta dirección.</p>`;
             }
@@ -32,4 +44,3 @@ async function checkAirdrops() {
         resultsDiv.innerHTML = `<p>Error al obtener los datos. Intenta de nuevo.</p>`;
     }
 }
-
