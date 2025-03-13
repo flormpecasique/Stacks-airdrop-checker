@@ -29,8 +29,14 @@ async function checkAirdrops() {
                     .sort((a, b) => a[0].localeCompare(b[0])) // Ordenar alfabéticamente
                     .forEach(([tokenAddress, details], index) => {
                         airdropCount++;
-                        const tokenName = details.symbol || "Desconocido"; // Nombre del token
-                        const balance = details.balance / (10 ** details.decimals);
+
+                        // Verificamos si el nombre del token existe, si no, mostramos "Desconocido"
+                        const tokenName = details?.symbol ? details.symbol : "Desconocido";
+
+                        // Verificamos si los decimales existen y calculamos el balance correctamente
+                        const balance = (details?.balance && details?.decimals !== undefined)
+                            ? (details.balance / Math.pow(10, details.decimals)).toFixed(6)
+                            : "Error";
 
                         resultHTML += `<tr>
                             <td>${airdropCount}</td>
