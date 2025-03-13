@@ -12,47 +12,47 @@ async function checkAirdrops() {
         const response = await fetch(`/api/hiro-proxy?address=${address}`);
         const data = await response.json();
 
-        if (data) {
+        console.log(data);  // Imprime los datos recibidos para depurar
+
+        if (data && data.fungible_tokens && Object.keys(data.fungible_tokens).length > 0) {
             let resultHTML = `<h2>Airdrops recibidos</h2>`;
             resultHTML += `<p><strong>STX:</strong> ${data.stx.balance / 1e6} STX</p>`;
 
-            if (data.fungible_tokens && Object.keys(data.fungible_tokens).length > 0) {
-                let airdropCount = 0;
-                resultHTML += `<table>
-                    <tr>
-                        <th>#</th>
-                        <th>Token</th>
-                        <th>Cantidad</th>
+            let airdropCount = 0;
+            resultHTML += `<table>
+                <tr>
+                    <th>#</th>
+                    <th>Token</th>
+                    <th>Cantidad</th>
+                </tr>`;
+
+            Object.entries(data.fungible_tokens)
+                .sort((a, b) => a[0].localeCompare(b[0])) // Ordenar alfabéticamente
+                .forEach(([tokenAddress, details], index) => {
+                    airdropCount++;
+
+                    // Verificamos si el nombre del token existe, si no, mostramos "Desconocido"
+                    const tokenName = details?.symbol ? details.symbol : "Desconocido";
+
+                    // Verificamos si los decimales existen y calculamos el balance correctamente
+                    const balance = (details?.balance && details?.decimals !== undefined)
+                        ? (details.balance / Math.pow(10, details.decimals)).toFixed(6)
+                        : "Error";
+
+                    resultHTML += `<tr>
+                        <td>${airdropCount}</td>
+                        <td>${tokenName}</td>
+                        <td>${balance}</td>
                     </tr>`;
+                });
 
-                Object.entries(data.fungible_tokens)
-                    .sort((a, b) => a[0].localeCompare(b[0])) // Ordenar alfabéticamente
-                    .forEach(([tokenAddress, details], index) => {
-                        airdropCount++;
-
-                        // Verificamos si el nombre del token existe, si no, mostramos "Desconocido"
-                        const tokenName = details?.symbol ? details.symbol : "Desconocido";
-
-                        // Verificamos si los decimales existen y calculamos el balance correctamente
-                        const balance = (details?.balance && details?.decimals !== undefined)
-                            ? (details.balance / Math.pow(10, details.decimals)).toFixed(6)
-                            : "Error";
-
-                        resultHTML += `<tr>
-                            <td>${airdropCount}</td>
-                            <td>${tokenName}</td>
-                            <td>${balance}</td>
-                        </tr>`;
-                    });
-
-                resultHTML += `</table>`;
-            } else {
-                resultHTML += `<p>No se encontraron tokens en esta dirección.</p>`;
-            }
-
+            resultHTML += `</table>`;
             resultsDiv.innerHTML = resultHTML;
+        } else {
+            resultsDiv.innerHTML = `<p>No se encontraron tokens en esta dirección.</p>`;
         }
     } catch (error) {
+        console.error(error);  // Imprime el error en la consola
         resultsDiv.innerHTML = `<p>Error al obtener los datos. Intenta de nuevo.</p>`;
     }
 }
