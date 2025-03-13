@@ -109,3 +109,28 @@ td {
         max-width: 350px;
     }
 }
+
+.input-container {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.input-container input {
+    flex: 1;
+    padding: 8px;
+}
+
+.input-container button {
+    padding: 8px 12px;
+}
+
+.footer {
+    font-size: 12px;
+    opacity: 0.7;
+    text-align: center;
+    margin-top: 20px;
+}
+
