@@ -10,12 +10,17 @@
     <div class="container">
         <h1>Stacks Airdrop & Claim Checker</h1>
         <p>Enter your Stacks address to check unclaimed tokens.</p>
-        <input type="text" id="stacksAddress" placeholder="Example: SP3TJ...W6Y">
-        <button onclick="checkAirdrops()">Check Airdrops</button>
+        
+        <div class="input-container">
+            <label for="stacksAddress" class="sr-only">Stacks Address</label>
+            <input type="text" id="stacksAddress" placeholder="Example: SP3TJ...W6Y">
+            <button onclick="checkAirdrops()">Check Airdrops</button>
+        </div>
+
         <div id="results"></div>
     </div>
     
-    <footer>© 2025 Stacks Airdrop & Claim Checker by flor.btc | All rights reserved.</footer>
+    <footer class="footer">© 2025 Stacks Airdrop & Claim Checker by flor.btc | All rights reserved.</footer>
 
     <script src="script.js"></script>
 </body>
