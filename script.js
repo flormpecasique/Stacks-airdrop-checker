@@ -9,12 +9,7 @@ async function checkAirdrops() {
     resultsDiv.innerHTML = "<p>Buscando airdrops...</p>";
 
     try {
-        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${process.env.HIRO_API_KEY}`, // usando la API key
-            },
-        });
+        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`);
         const data = await response.json();
 
         if (data) {
@@ -35,13 +30,13 @@ async function checkAirdrops() {
                     .forEach(([tokenAddress, details], index) => {
                         airdropCount++;
 
-                        // Verificar que el nombre del token esté disponible
-                        const tokenName = details?.symbol || "Desconocido";
+                        // Verificamos si el nombre del token existe, si no, mostramos "Desconocido"
+                        const tokenName = details?.symbol ? details.symbol : "Desconocido";
 
-                        // Asegurarse de que balance y decimals estén disponibles
-                        const balance = (details?.balance && details?.decimals !== undefined) 
-                            ? (details.balance / Math.pow(10, details.decimals)).toFixed(6) 
-                            : "Error en el balance";
+                        // Verificamos si los decimales existen y calculamos el balance correctamente
+                        const balance = (details?.balance && details?.decimals !== undefined)
+                            ? (details.balance / Math.pow(10, details.decimals)).toFixed(6)
+                            : "Error";
 
                         resultHTML += `<tr>
                             <td>${airdropCount}</td>
@@ -58,7 +53,6 @@ async function checkAirdrops() {
             resultsDiv.innerHTML = resultHTML;
         }
     } catch (error) {
-        console.error(error);  // Para ver el error en la consola de desarrollo
         resultsDiv.innerHTML = `<p>Error al obtener los datos. Intenta de nuevo.</p>`;
     }
 }
