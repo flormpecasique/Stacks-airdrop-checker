@@ -30,7 +30,9 @@ async function checkAirdrops() {
 
                 // Extraer el nombre del airdrop desde el contrato
                 const airdropName = contract.includes(".") ? contract.split('.')[1] : "Unknown Airdrop";
-                const contractLink = `https://explorer.hiro.so/txid/${contract}`;
+                
+                // Crear el enlace al contrato en el explorador de Stacks
+                const contractLink = `https://explorer.hiro.so/address/${contract}`;
 
                 resultHTML += `<tr>
                     <td>${airdropCount}</td>
@@ -50,4 +52,3 @@ async function checkAirdrops() {
         console.error("Fetch error:", error);
     }
 }
-
