@@ -26,8 +26,15 @@ body {
 /* Título */
 h1 {
     color: #fff;
-    font-size: 20px;
+    font-size: 24px;
+    font-weight: bold;
     margin-bottom: 10px;
+
+}
+
+p {
+    font-size: 14px;
+    color: #ccc;
 }
 
 /* Formulario: input y botón alineados */
@@ -127,10 +134,12 @@ td {
     padding: 8px 12px;
 }
 
-.footer {
-    font-size: 12px;
-    opacity: 0.7;
+/* Centrar footer en la parte inferior */
+footer {
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
     text-align: center;
-    margin-top: 20px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
 }
-
