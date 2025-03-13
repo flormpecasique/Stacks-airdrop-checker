@@ -11,7 +11,9 @@ export default async function handler(req, res) {
         });
 
         if (!response.ok) {
-            throw new Error('Error al contactar con la API de Hiro');
+            const errorResponse = await response.json();
+            console.error("Error de la API de Hiro:", errorResponse);  // Muestra detalles de la respuesta
+            throw new Error(`Error de la API de Hiro: ${response.status}`);
         }
 
         const data = await response.json();
