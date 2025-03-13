@@ -34,7 +34,7 @@ async function checkAirdrops() {
                 resultHTML += `<tr>
                     <td>${airdropCount}</td>
                     <td>${airdropName}</td>
-                    <td>✔️</td>
+                    <td>✅</td>
                 </tr>`;
             }
 
