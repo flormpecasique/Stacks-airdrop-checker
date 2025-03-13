@@ -20,7 +20,7 @@ async function checkAirdrops() {
             resultHTML += `<p><strong>STX:</strong> ${(data.stx.balance / 1e6).toFixed(6)} STX</p>`;
         }
 
-        // Tokens fungibles
+        // Tokens fungibles recibidos (posibles airdrops)
         if (data.fungible_tokens && data.fungible_tokens.length > 0) {
             resultHTML += `<table>
                 <tr>
@@ -32,24 +32,25 @@ async function checkAirdrops() {
             let airdropCount = 0;
             for (const token of data.fungible_tokens) {
                 airdropCount++;
-                const tokenName = token.name; // El nombre del token ya viene en la respuesta
-                const balance = token.amount / (10 ** token.decimals); // La cantidad de tokens con su precisión
+                const tokenName = token.name; // Nombre del token
+                const balance = token.amount / (10 ** token.decimals); // Ajuste de la cantidad
 
-                // Asegurarse de que la cantidad es válida
-                if (isNaN(balance)) {
-                    resultHTML += `<tr>
-                        <td>${airdropCount}</td>
-                        <td>${tokenName}</td>
-                        <td>Invalid Amount</td>
-                    </tr>`;
-                } else {
-                    resultHTML += `<tr>
-                        <td>${airdropCount}</td>
-                        <td>${tokenName}</td>
-                        <td>${balance.toFixed(6)}</td>
-                    </tr>`;
-                }
+                // Mostrar la cantidad de tokens
+                resultHTML += `<tr>
+                    <td>${airdropCount}</td>
+                    <td>${tokenName}</td>
+                    <td>${balance.toFixed(6)}</td>
+                </tr>`;
             }
 
             resultHTML += `</table>`;
         } else {
+            resultHTML += `<p>No airdropped tokens found.</p>`;
+        }
+
+        resultsDiv.innerHTML = resultHTML;
+    } catch (error) {
+        resultsDiv.innerHTML = `<p>Error retrieving data. Please try again.</p>`;
+        console.error("Fetch error:", error);
+    }
+}
