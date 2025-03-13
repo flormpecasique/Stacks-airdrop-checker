@@ -6,23 +6,22 @@ async function checkAirdrops() {
     }
 
     const resultsDiv = document.getElementById("results");
-    resultsDiv.innerHTML = "<p>Searching for airdrops...</p>";
+    resultsDiv.innerHTML = "<p>Fetching airdrop data...</p>";
 
     try {
-        // Obtener balances de la API de Hiro usando el proxy seguro en Vercel
-        const balancesResponse = await fetch(`/api/hiro-proxy?endpoint=extended/v1/address/${address}/balances`);
-        const balancesData = await balancesResponse.json();
+        const response = await fetch(`/api/hiro-proxy?endpoint=extended/v1/address/${address}/balances`);
+        if (!response.ok) throw new Error("API request failed");
 
-        if (!balancesData) {
-            resultsDiv.innerHTML = `<p>Error fetching balance data.</p>`;
-            return;
+        const data = await response.json();
+        let resultHTML = `<h2>Received Airdrops</h2>`;
+
+        // Mostrar saldo de STX
+        if (data.stx && data.stx.balance) {
+            resultHTML += `<p><strong>STX:</strong> ${(data.stx.balance / 1e6).toFixed(6)} STX</p>`;
         }
 
-        let resultHTML = `<h2>Received Airdrops</h2>`;
-        resultHTML += `<p><strong>STX:</strong> ${balancesData.stx.balance / 1e6} STX</p>`;
-
-        if (balancesData.fungible_tokens && Object.keys(balancesData.fungible_tokens).length > 0) {
-            let airdropCount = 0;
+        // Tokens fungibles
+        if (data.fungible_tokens && Object.keys(data.fungible_tokens).length > 0) {
             resultHTML += `<table>
                 <tr>
                     <th>#</th>
@@ -30,36 +29,40 @@ async function checkAirdrops() {
                     <th>Amount</th>
                 </tr>`;
 
-            // Obtener lista de tokens desde StxScan para validar nombres
-            const tokenListResponse = await fetch("https://stxscan.co/api/tokens");
-            const tokenList = await tokenListResponse.json();
-
-            // Procesar cada token recibido
-            const tokens = Object.entries(balancesData.fungible_tokens).map(([contract, details]) => {
-                const tokenName = tokenList.find(t => t.contract === contract)?.name || details.symbol || "Unknown";
+            let airdropCount = 0;
+            for (const [contract, details] of Object.entries(data.fungible_tokens)) {
+                airdropCount++;
+                const tokenName = await getTokenName(contract);
                 const balance = details.balance / (10 ** details.decimals);
-                return { tokenName, balance };
-            });
 
-            // Ordenar por nombre de token
-            tokens.sort((a, b) => a.tokenName.localeCompare(b.tokenName));
-
-            // Generar tabla con resultados
-            tokens.forEach(({ tokenName, balance }, index) => {
                 resultHTML += `<tr>
-                    <td>${index + 1}</td>
+                    <td>${airdropCount}</td>
                     <td>${tokenName}</td>
                     <td>${balance}</td>
                 </tr>`;
-            });
+            }
 
             resultHTML += `</table>`;
         } else {
-            resultHTML += `<p>No tokens found at this address.</p>`;
+            resultHTML += `<p>No airdropped tokens found.</p>`;
         }
 
         resultsDiv.innerHTML = resultHTML;
     } catch (error) {
         resultsDiv.innerHTML = `<p>Error retrieving data. Please try again.</p>`;
+        console.error("Fetch error:", error);
+    }
+}
+
+// Función para obtener el nombre del token usando stxscan.co/tokens
+async function getTokenName(contract) {
+    try {
+        const response = await fetch("https://stxscan.co/tokens");
+        const tokenList = await response.json();
+        const token = tokenList.find(t => t.contract === contract);
+        return token ? token.name : "Unknown Token";
+    } catch (error) {
+        console.error("Error fetching token name:", error);
+        return "Unknown Token";
     }
 }
