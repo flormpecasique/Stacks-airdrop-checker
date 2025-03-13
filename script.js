@@ -21,6 +21,7 @@ async function checkAirdrops() {
                 <tr>
                     <th>#</th>
                     <th>Airdrop Name</th>
+                    <th>Token Name</th>
                     <th>Status</th>
                 </tr>`;
 
@@ -28,8 +29,11 @@ async function checkAirdrops() {
             for (const contract of Object.keys(balanceData.fungible_tokens)) {
                 airdropCount++;
 
-                // Extraer el nombre del token, que es lo que está después del punto y antes de los "::"
+                // Extraer el nombre del airdrop, que es lo que está después del punto y antes de los "::"
                 const airdropName = contract.includes(".") ? contract.split('.')[1].split("::")[0] : "Unknown Airdrop";
+
+                // Obtener el nombre del token (puedes ajustar esto si tienes acceso a más detalles)
+                const tokenName = "Token Name Placeholder"; // Aquí puedes agregar el nombre real si tienes la info
 
                 // Generar la URL del contrato sin la parte "::" y el nombre del token
                 const contractLink = `https://explorer.hiro.so/address/${contract.split("::")[0]}`;
@@ -38,6 +42,7 @@ async function checkAirdrops() {
                 resultHTML += `<tr>
                     <td>${airdropCount}</td>
                     <td><a href="${contractLink}" target="_blank">${airdropName}</a></td>
+                    <td>${tokenName}</td>
                     <td>✔️</td>
                 </tr>`;
             }
@@ -53,3 +58,4 @@ async function checkAirdrops() {
         console.error("Fetch error:", error);
     }
 }
+
