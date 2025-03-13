@@ -9,38 +9,34 @@ async function checkAirdrops() {
     resultsDiv.innerHTML = "<p>Fetching airdrop data...</p>";
 
     try {
-        const response = await fetch(`https://stacks-node-api.mainnet.stacks.co/v2/accounts/${address}`);
+        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/transactions`);
         if (!response.ok) throw new Error("API request failed");
 
         const data = await response.json();
         let resultHTML = `<h2>Received Airdrops</h2>`;
 
-        // Mostrar saldo de STX
-        if (data.stx && data.stx.balance) {
-            resultHTML += `<p><strong>STX:</strong> ${(data.stx.balance / 1e6).toFixed(6)} STX</p>`;
-        }
-
-        // Airdrops recibidos
-        if (data.transactions && data.transactions.length > 0) {
+        if (data.results && data.results.length > 0) {
             resultHTML += `<table>
                 <tr>
                     <th>#</th>
                     <th>Airdrop Name</th>
                     <th>Status</th>
+                    <th>Link</th>
                 </tr>`;
 
             let airdropCount = 0;
-            for (const tx of data.transactions) {
-                if (tx.tx_type === "token_transfer" && tx.token && tx.token.contract) {
+            for (const tx of data.results) {
+                if (tx.tx_type === "token_transfer") {
                     airdropCount++;
-                    const contractAddress = tx.token.contract;
-                    const airdropName = contractAddress.split('.')[1];  // Extraemos el nombre del airdrop
-                    const status = tx.status === "success" ? "✔️" : "⏳"; // Check o reloj de arena
+                    const contractAddress = tx.contract_call.contract_id || "Unknown Contract";
+                    const airdropName = contractAddress.includes(".") ? contractAddress.split('.')[1] : "Unknown Airdrop";
+                    const status = tx.tx_status === "success" ? "✔️" : "⏳"; // Check si fue recibido, reloj de arena si está pendiente
 
                     resultHTML += `<tr>
                         <td>${airdropCount}</td>
-                        <td><a href="https://explorer.hiro.so/address/${contractAddress}" target="_blank">${airdropName}</a></td>
+                        <td>${airdropName}</td>
                         <td>${status}</td>
+                        <td><a href="https://explorer.hiro.so/txid/${tx.tx_id}" target="_blank">View</a></td>
                     </tr>`;
                 }
             }
