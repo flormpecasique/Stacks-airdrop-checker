@@ -1,52 +1,65 @@
 async function checkAirdrops() {
     const address = document.getElementById("stacksAddress").value.trim();
     if (!address) {
-        alert("Por favor, ingresa una dirección válida.");
+        alert("Please enter a valid Stacks address.");
         return;
     }
 
     const resultsDiv = document.getElementById("results");
-    resultsDiv.innerHTML = "<p>Buscando airdrops...</p>";
+    resultsDiv.innerHTML = "<p>Searching for airdrops...</p>";
 
     try {
-        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`);
-        const data = await response.json();
+        // Obtener balances de la API de Hiro usando el proxy seguro en Vercel
+        const balancesResponse = await fetch(`/api/hiro-proxy?endpoint=extended/v1/address/${address}/balances`);
+        const balancesData = await balancesResponse.json();
 
-        if (data) {
-            let resultHTML = `<h2>Airdrops recibidos</h2>`;
-            resultHTML += `<p><strong>STX:</strong> ${data.stx.balance / 1e6} STX</p>`;
-
-            if (data.fungible_tokens && Object.keys(data.fungible_tokens).length > 0) {
-                let airdropCount = 0;
-                resultHTML += `<table>
-                    <tr>
-                        <th>#</th>
-                        <th>Token</th>
-                        <th>Cantidad</th>
-                    </tr>`;
-
-                Object.entries(data.fungible_tokens)
-                    .sort((a, b) => a[0].localeCompare(b[0])) // Ordenar alfabéticamente
-                    .forEach(([tokenAddress, details], index) => {
-                        airdropCount++;
-                        const tokenName = details.symbol || "Desconocido"; // Nombre del token
-                        const balance = details.balance / (10 ** details.decimals);
-
-                        resultHTML += `<tr>
-                            <td>${airdropCount}</td>
-                            <td>${tokenName}</td>
-                            <td>${balance}</td>
-                        </tr>`;
-                    });
-
-                resultHTML += `</table>`;
-            } else {
-                resultHTML += `<p>No se encontraron tokens en esta dirección.</p>`;
-            }
-
-            resultsDiv.innerHTML = resultHTML;
+        if (!balancesData) {
+            resultsDiv.innerHTML = `<p>Error fetching balance data.</p>`;
+            return;
         }
+
+        let resultHTML = `<h2>Received Airdrops</h2>`;
+        resultHTML += `<p><strong>STX:</strong> ${balancesData.stx.balance / 1e6} STX</p>`;
+
+        if (balancesData.fungible_tokens && Object.keys(balancesData.fungible_tokens).length > 0) {
+            let airdropCount = 0;
+            resultHTML += `<table>
+                <tr>
+                    <th>#</th>
+                    <th>Token</th>
+                    <th>Amount</th>
+                </tr>`;
+
+            // Obtener lista de tokens desde StxScan para validar nombres
+            const tokenListResponse = await fetch("https://stxscan.co/api/tokens");
+            const tokenList = await tokenListResponse.json();
+
+            // Procesar cada token recibido
+            const tokens = Object.entries(balancesData.fungible_tokens).map(([contract, details]) => {
+                const tokenName = tokenList.find(t => t.contract === contract)?.name || details.symbol || "Unknown";
+                const balance = details.balance / (10 ** details.decimals);
+                return { tokenName, balance };
+            });
+
+            // Ordenar por nombre de token
+            tokens.sort((a, b) => a.tokenName.localeCompare(b.tokenName));
+
+            // Generar tabla con resultados
+            tokens.forEach(({ tokenName, balance }, index) => {
+                resultHTML += `<tr>
+                    <td>${index + 1}</td>
+                    <td>${tokenName}</td>
+                    <td>${balance}</td>
+                </tr>`;
+            });
+
+            resultHTML += `</table>`;
+        } else {
+            resultHTML += `<p>No tokens found at this address.</p>`;
+        }
+
+        resultsDiv.innerHTML = resultHTML;
     } catch (error) {
-        resultsDiv.innerHTML = `<p>Error al obtener los datos. Intenta de nuevo.</p>`;
+        resultsDiv.innerHTML = `<p>Error retrieving data. Please try again.</p>`;
     }
 }
