@@ -9,39 +9,48 @@ async function checkAirdrops() {
     resultsDiv.innerHTML = "<p>Fetching airdrop data...</p>";
 
     try {
-        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/transactions`);
-        if (!response.ok) throw new Error("API request failed");
+        // Obtener los balances para extraer los contratos de tokens recibidos
+        const balanceResponse = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`);
+        if (!balanceResponse.ok) throw new Error("Failed to fetch balances");
+        const balanceData = await balanceResponse.json();
 
-        const data = await response.json();
+        // Obtener historial de transacciones para verificar estado del airdrop
+        const txResponse = await fetch(`https://api.hiro.so/extended/v1/address/${address}/transactions`);
+        if (!txResponse.ok) throw new Error("Failed to fetch transactions");
+        const txData = await txResponse.json();
+
         let resultHTML = `<h2>Received Airdrops</h2>`;
 
-        if (data.results && data.results.length > 0) {
+        if (balanceData.fungible_tokens && Object.keys(balanceData.fungible_tokens).length > 0) {
             resultHTML += `<table>
                 <tr>
                     <th>#</th>
                     <th>Airdrop Name</th>
-                    <th>Amount</th>
                     <th>Status</th>
-                    <th>Link</th>
+                    <th>Received Date</th>
                 </tr>`;
 
             let airdropCount = 0;
-            for (const tx of data.results) {
-                if (tx.tx_type === "token_transfer") {
-                    airdropCount++;
-                    const contractAddress = tx.contract_call?.contract_id || "Unknown Contract";
-                    const airdropName = contractAddress.includes(".") ? contractAddress.split('.')[1] : "Unknown Airdrop";
-                    const status = tx.tx_status === "success" ? "✔️" : "⏳"; // Check si fue recibido, reloj de arena si está pendiente
-                    const amount = tx.token_transfer.amount ? (tx.token_transfer.amount / 1e6).toFixed(6) : "N/A"; // Normalizar la cantidad si está disponible
+            for (const [contract, details] of Object.entries(balanceData.fungible_tokens)) {
+                airdropCount++;
 
-                    resultHTML += `<tr>
-                        <td>${airdropCount}</td>
-                        <td>${airdropName}</td>
-                        <td>${amount}</td>
-                        <td>${status}</td>
-                        <td><a href="https://explorer.hiro.so/txid/${tx.tx_id}" target="_blank">View</a></td>
-                    </tr>`;
-                }
+                // Extraer el nombre del airdrop desde el contrato
+                const airdropName = contract.includes(".") ? contract.split('.')[1] : "Unknown Airdrop";
+
+                // Buscar la transacción más reciente de este contrato en el historial
+                const transaction = txData.results.find(tx => tx.tx_type === "token_transfer" && tx.contract_call?.contract_id === contract);
+
+                // Determinar estado del airdrop
+                const status = transaction ? "✔️" : "⏳";
+                const receivedDate = transaction ? new Date(transaction.burn_block_time * 1000).toLocaleDateString() : "Pending";
+                const txLink = transaction ? `<a href="https://explorer.hiro.so/txid/${transaction.tx_id}" target="_blank">${receivedDate}</a>` : receivedDate;
+
+                resultHTML += `<tr>
+                    <td>${airdropCount}</td>
+                    <td>${airdropName}</td>
+                    <td>${status}</td>
+                    <td>${txLink}</td>
+                </tr>`;
             }
 
             resultHTML += `</table>`;
