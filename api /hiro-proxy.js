@@ -1,25 +1,26 @@
+// api/hiro-proxy.js
 export default async function handler(req, res) {
-    const { address } = req.query;  // Obtenemos la dirección de la query
-    const apiKey = process.env.HIRO_API_KEY;  // me aseguro de haber configurado la clave API en Vercel
+    const { address } = req.query;
+    
+    if (!address) {
+        return res.status(400).json({ error: "Se requiere una dirección de Stacks." });
+    }
 
     try {
         const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`, {
-            method: 'GET',
+            method: "GET",
             headers: {
-                'Authorization': `Bearer ${apiKey}`,
+                "Authorization": `Bearer ${process.env.HIRO_API_KEY}`,
             },
         });
 
         if (!response.ok) {
-            const errorResponse = await response.json();
-            console.error("Error de la API de Hiro:", errorResponse);  // Muestra detalles de la respuesta
-            throw new Error(`Error de la API de Hiro: ${response.status}`);
+            return res.status(response.status).json({ error: "No se pudo obtener la información." });
         }
 
         const data = await response.json();
         res.status(200).json(data);
     } catch (error) {
-        console.error(error);  // Esto se imprimirá en los logs de Vercel
-        res.status(500).json({ error: 'Error al obtener los datos de la API de Hiro.' });
+        res.status(500).json({ error: "Error al obtener los datos del servidor." });
     }
 }
