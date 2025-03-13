@@ -15,7 +15,7 @@ async function checkAirdrops() {
         const balanceData = await balanceResponse.json();
 
         // Obtener historial de transacciones para verificar estado del airdrop
-        const txResponse = await fetch(`https://api.hiro.so/extended/v1/address/${address}/transactions`);
+        const txResponse = await fetch(`https://api.hiro.so/extended/v1/address/${address}/transactions?limit=50`);
         if (!txResponse.ok) throw new Error("Failed to fetch transactions");
         const txData = await txResponse.json();
 
@@ -37,8 +37,12 @@ async function checkAirdrops() {
                 // Extraer el nombre del airdrop desde el contrato
                 const airdropName = contract.includes(".") ? contract.split('.')[1] : "Unknown Airdrop";
 
-                // Buscar la transacción más reciente de este contrato en el historial
-                const transaction = txData.results.find(tx => tx.tx_type === "token_transfer" && tx.contract_call?.contract_id === contract);
+                // Buscar si hay una transacción de token transfer exitosa para este contrato
+                const transaction = txData.results.find(tx => 
+                    tx.tx_type === "token_transfer" && 
+                    tx.tx_status === "success" && 
+                    tx.token_transfer?.contract_id === contract
+                );
 
                 // Determinar estado del airdrop
                 const status = transaction ? "✔️" : "⏳";
