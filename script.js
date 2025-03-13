@@ -1,24 +1,52 @@
 async function checkAirdrops() {
-    const address = document.getElementById('stacksAddress').value.trim();
+    const address = document.getElementById("stacksAddress").value.trim();
     if (!address) {
-        alert('Please enter a valid Stacks address.');
+        alert("Por favor, ingresa una dirección válida.");
         return;
     }
 
-    const response = await fetch(`/api/hiro-proxy.js?address=${address}`);
-    const data = await response.json();
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "<p>Buscando airdrops...</p>";
 
-    let resultsHTML = `<h2>Airdrops Received</h2>`;
-    resultsHTML += `<table><tr><th>#</th><th>Token</th><th>Amount</th></tr>`;
+    try {
+        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`);
+        const data = await response.json();
 
-    data.forEach((airdrop, index) => {
-        resultsHTML += `<tr>
-            <td>${index + 1}</td>
-            <td>${airdrop.tokenName || "Unknown"}</td>
-            <td>${airdrop.amount || "N/A"}</td>
-        </tr>`;
-    });
+        if (data) {
+            let resultHTML = `<h2>Airdrops recibidos</h2>`;
+            resultHTML += `<p><strong>STX:</strong> ${data.stx.balance / 1e6} STX</p>`;
 
-    resultsHTML += `</table>`;
-    document.getElementById('results').innerHTML = resultsHTML;
+            if (data.fungible_tokens && Object.keys(data.fungible_tokens).length > 0) {
+                let airdropCount = 0;
+                resultHTML += `<table>
+                    <tr>
+                        <th>#</th>
+                        <th>Token</th>
+                        <th>Cantidad</th>
+                    </tr>`;
+
+                Object.entries(data.fungible_tokens)
+                    .sort((a, b) => a[0].localeCompare(b[0])) // Ordenar alfabéticamente
+                    .forEach(([tokenAddress, details], index) => {
+                        airdropCount++;
+                        const tokenName = details.symbol || "Desconocido"; // Nombre del token
+                        const balance = details.balance / (10 ** details.decimals);
+
+                        resultHTML += `<tr>
+                            <td>${airdropCount}</td>
+                            <td>${tokenName}</td>
+                            <td>${balance}</td>
+                        </tr>`;
+                    });
+
+                resultHTML += `</table>`;
+            } else {
+                resultHTML += `<p>No se encontraron tokens en esta dirección.</p>`;
+            }
+
+            resultsDiv.innerHTML = resultHTML;
+        }
+    } catch (error) {
+        resultsDiv.innerHTML = `<p>Error al obtener los datos. Intenta de nuevo.</p>`;
+    }
 }
