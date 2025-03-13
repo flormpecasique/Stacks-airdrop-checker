@@ -28,7 +28,7 @@ async function checkAirdrops() {
             for (const contract of Object.keys(balanceData.fungible_tokens)) {
                 airdropCount++;
 
-                // Extraer el nombre del airdrop desde el contrato
+                // Extraer el nombre del airdrop desde el contrato (después del punto)
                 const airdropName = contract.includes(".") ? contract.split('.')[1] : "Unknown Airdrop";
                 
                 // Crear el enlace al contrato en el explorador de Stacks
