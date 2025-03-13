@@ -9,7 +9,7 @@ async function checkAirdrops() {
     resultsDiv.innerHTML = "<p>Fetching airdrop data...</p>";
 
     try {
-        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/balances`);
+        const response = await fetch(`https://stacks-node-api.mainnet.stacks.co/v2/accounts/${address}`);
         if (!response.ok) throw new Error("API request failed");
 
         const data = await response.json();
@@ -21,7 +21,7 @@ async function checkAirdrops() {
         }
 
         // Tokens fungibles
-        if (data.fungible_tokens && Object.keys(data.fungible_tokens).length > 0) {
+        if (data.fungible_tokens && data.fungible_tokens.length > 0) {
             resultHTML += `<table>
                 <tr>
                     <th>#</th>
@@ -30,13 +30,12 @@ async function checkAirdrops() {
                 </tr>`;
 
             let airdropCount = 0;
-            for (const [contract, details] of Object.entries(data.fungible_tokens)) {
+            for (const token of data.fungible_tokens) {
                 airdropCount++;
+                const tokenName = token.name; // El nombre del token ya viene en la respuesta
+                const balance = token.amount / (10 ** token.decimals); // La cantidad de tokens con su precisión
 
-                const tokenName = await getTokenName(contract);
-                const balance = details.balance / (10 ** details.decimals);
-
-                // Asegurarnos de que la cantidad es válida
+                // Asegurarse de que la cantidad es válida
                 if (isNaN(balance)) {
                     resultHTML += `<tr>
                         <td>${airdropCount}</td>
@@ -54,28 +53,3 @@ async function checkAirdrops() {
 
             resultHTML += `</table>`;
         } else {
-            resultHTML += `<p>No airdropped tokens found.</p>`;
-        }
-
-        resultsDiv.innerHTML = resultHTML;
-    } catch (error) {
-        resultsDiv.innerHTML = `<p>Error retrieving data. Please try again.</p>`;
-        console.error("Fetch error:", error);
-    }
-}
-
-// Función para obtener el nombre del token usando la API de Hiro
-async function getTokenName(contract) {
-    try {
-        const response = await fetch(`https://api.hiro.so/v1/tokens/${contract}`);
-        if (!response.ok) throw new Error("Failed to fetch token data");
-
-        const tokenData = await response.json();
-
-        // Verificamos si la respuesta contiene un nombre válido
-        return tokenData.name || "Unknown Token";
-    } catch (error) {
-        console.error("Error fetching token name:", error);
-        return "Unknown Token";
-    }
-}
