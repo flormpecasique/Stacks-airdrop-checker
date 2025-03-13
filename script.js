@@ -20,6 +20,7 @@ async function checkAirdrops() {
                 <tr>
                     <th>#</th>
                     <th>Airdrop Name</th>
+                    <th>Amount</th>
                     <th>Status</th>
                     <th>Link</th>
                 </tr>`;
@@ -28,13 +29,15 @@ async function checkAirdrops() {
             for (const tx of data.results) {
                 if (tx.tx_type === "token_transfer") {
                     airdropCount++;
-                    const contractAddress = tx.contract_call.contract_id || "Unknown Contract";
+                    const contractAddress = tx.contract_call?.contract_id || "Unknown Contract";
                     const airdropName = contractAddress.includes(".") ? contractAddress.split('.')[1] : "Unknown Airdrop";
                     const status = tx.tx_status === "success" ? "✔️" : "⏳"; // Check si fue recibido, reloj de arena si está pendiente
+                    const amount = tx.token_transfer.amount ? (tx.token_transfer.amount / 1e6).toFixed(6) : "N/A"; // Normalizar la cantidad si está disponible
 
                     resultHTML += `<tr>
                         <td>${airdropCount}</td>
                         <td>${airdropName}</td>
+                        <td>${amount}</td>
                         <td>${status}</td>
                         <td><a href="https://explorer.hiro.so/txid/${tx.tx_id}" target="_blank">View</a></td>
                     </tr>`;
