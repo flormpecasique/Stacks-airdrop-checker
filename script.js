@@ -32,17 +32,24 @@ async function checkAirdrops() {
             let airdropCount = 0;
             for (const [contract, details] of Object.entries(data.fungible_tokens)) {
                 airdropCount++;
+
                 const tokenName = await getTokenName(contract);
                 const balance = details.balance / (10 ** details.decimals);
-                
-                // Obtener transacciones para obtener la cantidad exacta
-                const tokenAmount = await getTokenAmount(address, contract);
 
-                resultHTML += `<tr>
-                    <td>${airdropCount}</td>
-                    <td>${tokenName}</td>
-                    <td>${tokenAmount}</td>
-                </tr>`;
+                // Asegurarnos de que la cantidad es válida
+                if (isNaN(balance)) {
+                    resultHTML += `<tr>
+                        <td>${airdropCount}</td>
+                        <td>${tokenName}</td>
+                        <td>Invalid Amount</td>
+                    </tr>`;
+                } else {
+                    resultHTML += `<tr>
+                        <td>${airdropCount}</td>
+                        <td>${tokenName}</td>
+                        <td>${balance.toFixed(6)}</td>
+                    </tr>`;
+                }
             }
 
             resultHTML += `</table>`;
@@ -61,32 +68,14 @@ async function checkAirdrops() {
 async function getTokenName(contract) {
     try {
         const response = await fetch(`https://api.hiro.so/v1/tokens/${contract}`);
+        if (!response.ok) throw new Error("Failed to fetch token data");
+
         const tokenData = await response.json();
+
+        // Verificamos si la respuesta contiene un nombre válido
         return tokenData.name || "Unknown Token";
     } catch (error) {
         console.error("Error fetching token name:", error);
         return "Unknown Token";
-    }
-}
-
-// Función para obtener la cantidad de tokens recibidos a través de transacciones
-async function getTokenAmount(address, contract) {
-    try {
-        const response = await fetch(`https://api.hiro.so/extended/v1/address/${address}/transactions?filter=${contract}`);
-        const transactions = await response.json();
-
-        let totalAmount = 0;
-        transactions.forEach(tx => {
-            tx.tx_events.forEach(event => {
-                if (event.event_type === 'transfer' && event.asset === contract) {
-                    totalAmount += event.amount / (10 ** event.asset_info.decimals);  // Ajustar por decimales
-                }
-            });
-        });
-
-        return totalAmount.toFixed(6);  // Devolver con formato adecuado
-    } catch (error) {
-        console.error("Error fetching token amount:", error);
-        return "0";
     }
 }
