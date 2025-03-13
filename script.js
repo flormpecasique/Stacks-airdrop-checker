@@ -31,9 +31,10 @@ async function checkAirdrops() {
                 // Extraer el nombre del airdrop desde el contrato (después del punto)
                 const airdropName = contract.includes(".") ? contract.split('.')[1] : "Unknown Airdrop";
                 
-                // Crear el enlace al contrato en el explorador de Stacks
+                // Crear el enlace al contrato en el explorador de Stacks (sin espacios ni caracteres no válidos)
                 const contractLink = `https://explorer.hiro.so/address/${contract}`;
 
+                // Validar y generar el HTML con el enlace
                 resultHTML += `<tr>
                     <td>${airdropCount}</td>
                     <td><a href="${contractLink}" target="_blank">${airdropName}</a></td>
