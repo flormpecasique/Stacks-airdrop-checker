@@ -43,7 +43,7 @@ async function checkAirdrops() {
                     <td>${airdropCount}</td>
                     <td><a href="${contractLink}" target="_blank">${airdropName}</a></td>
                     <td>${tokenName}</td>
-                    <td>✔️</td>
+                    <td>✅</td>
                 </tr>`;
             }
 
