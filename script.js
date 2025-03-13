@@ -9,7 +9,7 @@ async function checkAirdrops() {
     resultsDiv.innerHTML = "<p>Buscando airdrops...</p>";
 
     try {
-        const response = await fetch(`https://stacks-airdrop-checker.vercel.app/api/hiro-proxy?address=${address}`);
+        const response = await fetch(`/api/hiro-proxy?address=${address}`);
         const data = await response.json();
 
         if (data) {
