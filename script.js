@@ -13,22 +13,28 @@ async function checkAirdrops() {
         const data = await response.json();
 
         if (data) {
-            let resultHTML = `<h2>Tokens en tu dirección</h2>`;
+            let resultHTML = `<h2>Airdrops recibidos</h2>`;
             resultHTML += `<p><strong>STX:</strong> ${data.stx.balance / 1e6} STX</p>`;
 
             if (data.fungible_tokens && Object.keys(data.fungible_tokens).length > 0) {
+                let airdropCount = 0;
                 resultHTML += `<table>
                     <tr>
+                        <th>#</th>
                         <th>Token</th>
                         <th>Cantidad</th>
                     </tr>`;
 
                 Object.entries(data.fungible_tokens)
                     .sort((a, b) => a[0].localeCompare(b[0])) // Ordenar alfabéticamente
-                    .forEach(([token, details]) => {
+                    .forEach(([tokenAddress, details], index) => {
+                        airdropCount++;
+                        const tokenName = details.symbol || "Desconocido"; // Nombre del token
                         const balance = details.balance / (10 ** details.decimals);
+
                         resultHTML += `<tr>
-                            <td>${token}</td>
+                            <td>${airdropCount}</td>
+                            <td>${tokenName}</td>
                             <td>${balance}</td>
                         </tr>`;
                     });
