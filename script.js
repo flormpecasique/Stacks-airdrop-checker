@@ -9,8 +9,10 @@ async function checkAirdrops() {
     resultsDiv.innerHTML = "<p>Fetching airdrop data...</p>";
 
     try {
-        // Si el input contiene un ".", asumimos que es un nombre BNS
+        // Si el input contiene un ".", asumimos que es un nombre BNS y lo convertimos a minúsculas
         if (input.includes(".")) {
+            input = input.toLowerCase(); // Convertimos el BNS a minúsculas para evitar errores
+
             const bnsResponse = await fetch(`https://api.hiro.so/v1/names/${input}`);
             if (!bnsResponse.ok) throw new Error("Failed to fetch BNS data");
             const bnsData = await bnsResponse.json();
